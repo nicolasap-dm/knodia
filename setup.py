@@ -7,11 +7,11 @@ VERSION = "0.1.0dev"
 
 
 def get_requirements():
-    return []
+    return ["shapely", "traits"]
 
 
 def get_dev_requirements():
-    return ["flake8", "isort", "black"]
+    return ["black", "flake8", "isort"]
 
 
 def main():
