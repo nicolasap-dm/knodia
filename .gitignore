@@ -1,3 +1,12 @@
+# Development
+.vscode/
+
+# Installation
+*/_version.py
+
+
+### Github python boilerplate follows
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
