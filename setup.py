@@ -12,11 +12,9 @@ def get_requirements():
 
 def main():
 
-    version_file = os.path.join(
-        os.path.dirname(__file__), "knodia", "_version.py"
-    )
+    version_file = os.path.join(os.path.dirname(__file__), "knodia", "_version.py")
     with open(version_file, "w") as f:
-        f.write(f"version = \"{VERSION}\"\n")
+        f.write(f'version = "{VERSION}"\n')
 
     with open("README.md", "r", encoding="utf-8") as fh:
         long_description = fh.read()
@@ -41,7 +39,7 @@ def main():
             "Operating System :: OS Independent",
         ],
         python_requires=">=3.6",
-        install_requires=get_requirements()
+        install_requires=get_requirements(),
     )
 
 
