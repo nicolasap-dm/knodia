@@ -14,10 +14,6 @@ def get_dev_requirements():
     return ["black", "flake8", "isort"]
 
 
-def get_dev_requirements():
-    return ["flake8", "isort", "black"]
-
-
 def main():
 
     version_file = os.path.join(os.path.dirname(__file__), "knodia", "_version.py")
