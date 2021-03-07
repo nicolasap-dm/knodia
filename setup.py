@@ -10,6 +10,10 @@ def get_requirements():
     return []
 
 
+def get_dev_requirements():
+    return ["flake8", "isort", "black"]
+
+
 def main():
 
     version_file = os.path.join(os.path.dirname(__file__), "knodia", "_version.py")
@@ -40,6 +44,7 @@ def main():
         ],
         python_requires=">=3.6",
         install_requires=get_requirements(),
+        extras_require={"dev": get_dev_requirements()},
     )
 
 
