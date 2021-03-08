@@ -3,7 +3,7 @@ import os
 from setuptools import find_packages, setup
 
 # Update manually
-VERSION = "0.1.0dev"
+VERSION = "0.1.0.dev0"
 
 
 def get_requirements():
