@@ -1,5 +1,6 @@
 from shapely.geometry import LineString
-from traits.api import HasStrictTraits, Instance, List, Property, Union
+from shapely.ops import polygonize, unary_union
+from traits.api import HasStrictTraits, Instance, List, Property, Union, cached_property
 
 
 class Diagram(HasStrictTraits):
@@ -11,6 +12,14 @@ class Diagram(HasStrictTraits):
     #: upon setting.
     line = Property(Union(Instance(LineString), List()), observe="_line")
     _line = Instance(LineString)
+
+    #: Simple polygons representing the individual regions defined by the diagram. The
+    #: region containing infinity is not included (see ``boundary``).
+    regions = Property(observe="line")
+
+    #: Line encompassing the diagram. One of the two region it defines is the region
+    #: containing infinity.
+    boundary = Property(Union(Instance(LineString)), observe="regions")
 
     def _set_line(self, line):
         if not isinstance(line, LineString):
@@ -31,3 +40,22 @@ class Diagram(HasStrictTraits):
 
     def _get_line(self):
         return self._line
+
+    @cached_property
+    def _get_regions(self):
+        # Based on Shapely documentation, unary_union fixes "invalid geometry":
+        # https://shapely.readthedocs.io/en/stable/manual.html#shapely.ops.unary_union
+        # Here we use it to clear overlapping geometry (which is expected, for knots)
+        # and separate the diagram area into disjoint regions.
+        regions = []
+        for region in polygonize(unary_union(self.line)):
+            if not region.is_simple:
+                # This should not happen
+                raise ValueError("A non-simple region was generated.")
+            regions.append(region)
+        # TODO: make a decent sorting, and test it
+        return sorted(regions, key=lambda r: list(r.boundary.coords))
+
+    @cached_property
+    def _get_boundary(self):
+        return unary_union(self.regions).boundary
