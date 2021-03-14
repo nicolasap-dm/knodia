@@ -65,3 +65,11 @@ class TestDiagram(unittest.TestCase):
         with self.assertRaises(ValueError):
             # List of non-coords rejected by shapely
             Diagram(line=["a", "b"])
+
+    def test_regions(self):
+        diagram = Diagram(line=TREFOIL)
+        regions = diagram.regions
+        self.assertEqual(len(regions), 4)
+
+        # check that is cached (same object when requesting again)
+        self.assertIs(diagram.regions[0], regions[0])
