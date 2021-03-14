@@ -1,6 +1,6 @@
 from shapely.geometry import LineString
 from shapely.ops import polygonize, unary_union
-from traits.api import cached_property, HasStrictTraits, Instance, List, Property, Union
+from traits.api import HasStrictTraits, Instance, List, Property, Union, cached_property
 
 
 class Diagram(HasStrictTraits):
@@ -53,8 +53,7 @@ class Diagram(HasStrictTraits):
                 # This should not happen
                 raise ValueError("A non-simple region was generated.")
             regions.append(region)
-        # Sort by bottom-left-most coordinate in the region (to ensure consistency).
-        # Users shouldn't rely on any particular sorting – just a deterministic one.
+        # TODO: make a decent sorting, and test it
         return sorted(regions, key=lambda r: list(r.boundary.coords))
 
     @cached_property
