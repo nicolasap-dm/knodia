@@ -14,8 +14,12 @@ class Diagram(HasStrictTraits):
     _line = Instance(LineString)
 
     #: Simple polygons representing the individual regions defined by the diagram. The
-    #: region containing infinity is not included.
+    #: region containing infinity is not included (see ``boundary``).
     regions = Property(observe="line")
+
+    #: Line encompassing the diagram. One of the two region it defines is the region
+    #: containing infinity.
+    boundary = Property(Union(Instance(LineString)), observe="regions")
 
     def _set_line(self, line):
         if not isinstance(line, LineString):
@@ -52,3 +56,7 @@ class Diagram(HasStrictTraits):
         # Sort by bottom-left-most coordinate in the region (to ensure consistency).
         # Users shouldn't rely on any particular sorting – just a deterministic one.
         return sorted(regions, key=lambda r: list(r.boundary.coords))
+
+    @cached_property
+    def _get_boundary(self):
+        return unary_union(self.regions).boundary

@@ -1,6 +1,6 @@
 import unittest
 
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Polygon
 from traits.api import TraitError
 
 from knodia.diagram import Diagram
@@ -73,3 +73,25 @@ class TestDiagram(unittest.TestCase):
 
         # check that is cached (same object when requesting again)
         self.assertIs(diagram.regions[0], regions[0])
+        # and that it updates
+        trefoil = TREFOIL
+        trefoil[0] = (0.1, 0)
+        diagram.line = trefoil
+        self.assertIsNot(diagram.regions[0], regions[0])
+
+    def test_boundary(self):
+        diagram = Diagram(line=TREFOIL)
+        boundary = diagram.boundary
+
+        # check that is cached (same object when requesting again)
+        self.assertIs(diagram.boundary, boundary)
+
+        # properties
+        self.assertIsInstance(boundary, LineString)
+        self.assertTrue(boundary.is_ring)
+        self.assertTrue(boundary.is_simple)
+
+        # contains all region
+        filled_boundary = Polygon(boundary)
+        for region in diagram.regions:
+            self.assertTrue(filled_boundary.contains(region))
