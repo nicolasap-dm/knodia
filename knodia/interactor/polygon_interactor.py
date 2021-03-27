@@ -1,12 +1,11 @@
 # Based on https://matplotlib.org/3.4.0/gallery/event_handling/poly_editor.html
 #
-# Copyright (c) 2012-2013 Matplotlib Development Team; All Rights Reserved
-#
-# This code is open source. See license for the original code in the
-# ``LICENSE_MATPLOTLIB``` file.
-#
+# Copyright (c) 2012-2013 Matplotlib Development Team; All Rights Reserved.
 # Edits by Nicola De Mitri and the knodia authors are visible in this file Git
 # commit history.
+#
+# This code is open source. See license for the original code in the
+# ``LICENSE_MATPLOTLIB`` file.
 
 import numpy as np
 from matplotlib.artist import Artist
