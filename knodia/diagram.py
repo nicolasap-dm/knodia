@@ -1,6 +1,11 @@
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.patches import Polygon
 from shapely.geometry import LineString
 from shapely.ops import polygonize, unary_union
 from traits.api import HasStrictTraits, Instance, List, Property, Union, cached_property
+
+from knodia.interactor.polygon_interactor import PolygonInteractor
 
 
 class Diagram(HasStrictTraits):
@@ -59,3 +64,28 @@ class Diagram(HasStrictTraits):
     @cached_property
     def _get_boundary(self):
         return unary_union(self.regions).boundary
+
+    def visual_edit(self):
+        # TODO: Currently doesn't actually change `self`.
+        # TODO: Make sure that %matplotlib tk is used in notebooks (e.g. by raising if
+        # otherwise)
+        poly = Polygon(np.column_stack(self.line.xy)[:-1], animated=True, fill=False)
+
+        fig, ax = plt.subplots()
+        ax.add_patch(poly)
+        PolygonInteractor(ax, poly)
+
+        xl, yl = _lims(self.line.xy)
+        ax.set_xlim(xl)
+        ax.set_ylim(yl)
+        plt.show()
+
+
+def _lims(xy):
+    def _mid_and_span(pts):
+        return (max(pts) + min(pts)) / 2, (max(pts) - min(pts)) / 2
+
+    xm, xs, ym, ys = *_mid_and_span(xy[0]), *_mid_and_span(xy[1])
+    span = max(xs, ys) * 1.1
+
+    return (xm - span, xm + span), (ym - span, ym + span)
