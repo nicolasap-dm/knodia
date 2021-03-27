@@ -7,7 +7,7 @@ VERSION = "0.1.0.dev0"
 
 
 def get_requirements():
-    return ["shapely", "traits", "numpy"]
+    return ["matplotlib", "numpy", "shapely", "traits"]
 
 
 def get_dev_requirements():
