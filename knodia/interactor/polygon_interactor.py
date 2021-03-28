@@ -51,11 +51,12 @@ class PolygonInteractor:
       'i' insert a vertex at point.  You must be within epsilon of the
           line connecting two existing vertices
 
+    For every destructive action, sends back the current poly to ``poly_callback``.
     """
 
     epsilon = 5  # max pixel distance to count as a vertex hit
 
-    def __init__(self, ax, poly):
+    def __init__(self, ax, poly, poly_callback):
         if poly.figure is None:
             raise RuntimeError(
                 "You must first add the polygon to a figure "
@@ -64,6 +65,7 @@ class PolygonInteractor:
         self.ax = ax
         canvas = poly.figure.canvas
         self.poly = poly
+        self.poly_callback = poly_callback
 
         x, y = zip(*self.poly.xy)
         self.line = Line2D(x, y, marker="o", markerfacecolor="r", animated=True)
@@ -83,8 +85,6 @@ class PolygonInteractor:
         self.background = self.canvas.copy_from_bbox(self.ax.bbox)
         self.ax.draw_artist(self.poly)
         self.ax.draw_artist(self.line)
-        # do not need to blit here, this will fire before the screen is
-        # updated
 
     def poly_changed(self, poly):
         """This method is called whenever the pathpatch object is called."""
@@ -124,6 +124,7 @@ class PolygonInteractor:
         if event.button != 1:
             return
         self._ind = None
+        self.poly_callback(self.poly)
 
     def on_key_press(self, event):
         """Callback for key presses."""
@@ -134,6 +135,7 @@ class PolygonInteractor:
             if ind is not None:
                 self.poly.xy = np.delete(self.poly.xy, ind, axis=0)
                 self.line.set_data(zip(*self.poly.xy))
+                self.poly_callback(self.poly)
         elif event.key == "i":
             xys = self.poly.get_transform().transform(self.poly.xy)
             p = event.x, event.y  # display coords
@@ -146,6 +148,7 @@ class PolygonInteractor:
                         self.poly.xy, i + 1, [event.xdata, event.ydata], axis=0
                     )
                     self.line.set_data(zip(*self.poly.xy))
+                    self.poly_callback(self.poly)
                     break
         if self.line.stale:
             self.canvas.draw_idle()
