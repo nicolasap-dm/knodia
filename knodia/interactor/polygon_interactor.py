@@ -46,9 +46,6 @@ class PolygonInteractor:
 
     Key-bindings
 
-      't' toggle vertex markers on and off.  When vertex markers are on,
-          you can move them, delete them
-
       'd' delete the vertex under point
 
       'i' insert a vertex at point.  You must be within epsilon of the
@@ -56,7 +53,6 @@ class PolygonInteractor:
 
     """
 
-    showverts = True
     epsilon = 5  # max pixel distance to count as a vertex hit
 
     def __init__(self, ax, poly):
@@ -117,8 +113,6 @@ class PolygonInteractor:
 
     def on_button_press(self, event):
         """Callback for mouse button presses."""
-        if not self.showverts:
-            return
         if event.inaxes is None:
             return
         if event.button != 1:
@@ -127,8 +121,6 @@ class PolygonInteractor:
 
     def on_button_release(self, event):
         """Callback for mouse button releases."""
-        if not self.showverts:
-            return
         if event.button != 1:
             return
         self._ind = None
@@ -137,12 +129,7 @@ class PolygonInteractor:
         """Callback for key presses."""
         if not event.inaxes:
             return
-        if event.key == "t":
-            self.showverts = not self.showverts
-            self.line.set_visible(self.showverts)
-            if not self.showverts:
-                self._ind = None
-        elif event.key == "d":
+        if event.key == "d":
             ind = self.get_ind_under_point(event)
             if ind is not None:
                 self.poly.xy = np.delete(self.poly.xy, ind, axis=0)
@@ -165,8 +152,6 @@ class PolygonInteractor:
 
     def on_mouse_move(self, event):
         """Callback for mouse movements."""
-        if not self.showverts:
-            return
         if self._ind is None:
             return
         if event.inaxes is None:
@@ -186,25 +171,3 @@ class PolygonInteractor:
         self.ax.draw_artist(self.poly)
         self.ax.draw_artist(self.line)
         self.canvas.blit(self.ax.bbox)
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Polygon
-
-    theta = np.arange(0, 2 * np.pi, 0.1)
-    r = 1.5
-
-    xs = r * np.cos(theta)
-    ys = r * np.sin(theta)
-
-    poly = Polygon(np.column_stack([xs, ys]), animated=True)
-
-    fig, ax = plt.subplots()
-    ax.add_patch(poly)
-    p = PolygonInteractor(ax, poly)
-
-    ax.set_title("Click and drag a point to move it")
-    ax.set_xlim((-2, 2))
-    ax.set_ylim((-2, 2))
-    plt.show()
