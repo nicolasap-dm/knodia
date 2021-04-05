@@ -55,7 +55,7 @@ class TestDiagram(unittest.TestCase):
         except Exception:
             self.fail("Should have worked")
 
-    def test_create_from_other(self):
+    def test_create_from_other_types(self):
         # When/Then
         with self.assertRaises(TraitError):
             # Tuples are rejected by type validation
@@ -65,6 +65,14 @@ class TestDiagram(unittest.TestCase):
         with self.assertRaises(ValueError):
             # List of non-coords rejected by shapely
             Diagram(line=["a", "b"])
+
+    def test_init_has_nontrivial_close_default(self):
+        # When
+        diagram = Diagram()
+
+        # Then
+        self.assertGreater(len(diagram._line.coords), 2)
+        self.assertEqual(diagram._line.coords[0], diagram._line.coords[-1])
 
     def test_regions(self):
         diagram = Diagram(line=TREFOIL)

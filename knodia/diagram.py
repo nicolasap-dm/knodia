@@ -58,6 +58,10 @@ class Diagram(HasStrictTraits):
     def _get_line(self):
         return self._line
 
+    def __line_default(self):
+        # The default diagram is a unknot triangle
+        return LineString(([0, 0], [1, 0], [0.5, 0.866], [0, 0]))
+
     @cached_property
     def _get_regions(self):
         # Based on Shapely documentation, unary_union fixes "invalid geometry":
@@ -95,7 +99,13 @@ class Diagram(HasStrictTraits):
             np.column_stack(self.line.xy)[:-1], animated=True, fill=False
         )
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 5))
+        # Remove all but the X, Y spy ("!label" and "!label2").
+        # TODO: create a toolbar manually, assemble additively not subtractively.
+        tb = fig.canvas.toolbar
+        for key in tb.children:
+            if "label" not in key:
+                tb.children[key].pack_forget()
         fig.canvas.mpl_connect("close_event", self._visual_edit_finished)
         ax.add_patch(editing_poly)
         PolygonInteractor(ax, editing_poly, poly_callback=self._update_line)
@@ -103,6 +113,12 @@ class Diagram(HasStrictTraits):
         xl, yl = _lims(self.line.xy)
         ax.set_xlim(xl)
         ax.set_ylim(yl)
+        ax.set_title(
+            "Click and drag to move the points.\n"
+            'Add a point under the pointer with "i".\n'
+            'Delete the point under the pointer with "d".',
+            size=10,
+        )
         plt.show()
 
     def _update_line(self, poly):
