@@ -71,7 +71,11 @@ class Diagram(HasStrictTraits):
                 raise ValueError("A non-simple region was generated.")
             regions.append(region)
         # TODO: make a decent sorting, and test it
-        return sorted(regions, key=lambda r: list(r.boundary.coords))
+        try:
+            toret = sorted(regions, key=lambda r: list(r.boundary.coords))
+        except Exception:
+            toret = regions
+        return toret
 
     @cached_property
     def _get_boundary(self):
