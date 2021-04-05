@@ -58,6 +58,10 @@ class Diagram(HasStrictTraits):
     def _get_line(self):
         return self._line
 
+    def __line_default(self):
+        # The default diagram is a unknot triangle
+        return LineString(([0, 0], [1, 0], [0.5, 0.866], [0, 0]))
+
     @cached_property
     def _get_regions(self):
         # Based on Shapely documentation, unary_union fixes "invalid geometry":
