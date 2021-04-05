@@ -8,6 +8,7 @@ from traits.api import (
     Bool,
     HasStrictTraits,
     Instance,
+    Int,
     List,
     Property,
     Union,
@@ -34,6 +35,10 @@ class Diagram(HasStrictTraits):
     #: Line encompassing the diagram. One of the two region it defines is the region
     #: containing infinity.
     boundary = Property(Union(Instance(LineString)), observe="regions")
+
+    #: Index to one of the points in "line" that defines a pair of Kauffman excluded
+    #: regions.
+    kauffman_point = Union(None, Int())
 
     #: Whether there is an open editor.
     _editing = Bool(False)
@@ -108,22 +113,28 @@ class Diagram(HasStrictTraits):
                 tb.children[key].pack_forget()
         fig.canvas.mpl_connect("close_event", self._visual_edit_finished)
         ax.add_patch(editing_poly)
-        PolygonInteractor(ax, editing_poly, poly_callback=self._update_line)
+        PolygonInteractor(
+            ax,
+            editing_poly,
+            x_point=self.kauffman_point,
+            poly_callback=self._update_line,
+        )
 
         xl, yl = _lims(self.line.xy)
         ax.set_xlim(xl)
         ax.set_ylim(yl)
         ax.set_title(
             "Click and drag to move the points.\n"
-            'Add a point under the pointer with "i".\n'
+            'Add a point under the pointer with "i" ("x" for marking).\n'
             'Delete the point under the pointer with "d".',
             size=10,
         )
         plt.show()
 
-    def _update_line(self, poly):
+    def _update_line(self, poly, x_point):
         """ Called every time the polygon is updated in a interactor."""
         self.line = poly.xy.tolist()
+        self.kauffman_point = x_point
 
     def _visual_edit_finished(self, event):
         self._editing = False
