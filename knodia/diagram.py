@@ -1,6 +1,20 @@
+import numpy as np
+from matplotlib import get_backend
+from matplotlib import pyplot as plt
+from matplotlib.patches import Polygon
 from shapely.geometry import LineString
 from shapely.ops import polygonize, unary_union
-from traits.api import HasStrictTraits, Instance, List, Property, Union, cached_property
+from traits.api import (
+    Bool,
+    HasStrictTraits,
+    Instance,
+    List,
+    Property,
+    Union,
+    cached_property,
+)
+
+from knodia.interactor.polygon_interactor import PolygonInteractor
 
 
 class Diagram(HasStrictTraits):
@@ -20,6 +34,9 @@ class Diagram(HasStrictTraits):
     #: Line encompassing the diagram. One of the two region it defines is the region
     #: containing infinity.
     boundary = Property(Union(Instance(LineString)), observe="regions")
+
+    #: Whether there is an open editor.
+    _editing = Bool(False)
 
     def _set_line(self, line):
         if not isinstance(line, LineString):
@@ -54,8 +71,53 @@ class Diagram(HasStrictTraits):
                 raise ValueError("A non-simple region was generated.")
             regions.append(region)
         # TODO: make a decent sorting, and test it
-        return sorted(regions, key=lambda r: list(r.boundary.coords))
+        try:
+            toret = sorted(regions, key=lambda r: list(r.boundary.coords))
+        except Exception:
+            toret = regions
+        return toret
 
     @cached_property
     def _get_boundary(self):
         return unary_union(self.regions).boundary
+
+    def visual_edit(self):
+        if "tkagg" not in get_backend().lower():
+            raise RuntimeError(
+                "This method requires matplotlib to run with the TkAgg backend. If "
+                "running from a notebook, use '%matplotlib tk' and restart the kernel."
+            )
+        if self._editing:
+            raise RuntimeError(
+                "The diagram is already being edited. " "Close all other editors first."
+            )
+        editing_poly = Polygon(
+            np.column_stack(self.line.xy)[:-1], animated=True, fill=False
+        )
+
+        fig, ax = plt.subplots()
+        fig.canvas.mpl_connect("close_event", self._visual_edit_finished)
+        ax.add_patch(editing_poly)
+        PolygonInteractor(ax, editing_poly, poly_callback=self._update_line)
+
+        xl, yl = _lims(self.line.xy)
+        ax.set_xlim(xl)
+        ax.set_ylim(yl)
+        plt.show()
+
+    def _update_line(self, poly):
+        """ Called every time the polygon is updated in a interactor."""
+        self.line = poly.xy.tolist()
+
+    def _visual_edit_finished(self, event):
+        self._editing = False
+
+
+def _lims(xy):
+    def _mid_and_span(pts):
+        return (max(pts) + min(pts)) / 2, (max(pts) - min(pts)) / 2
+
+    xm, xs, ym, ys = *_mid_and_span(xy[0]), *_mid_and_span(xy[1])
+    span = max(xs, ys) * 1.1
+
+    return (xm - span, xm + span), (ym - span, ym + span)
